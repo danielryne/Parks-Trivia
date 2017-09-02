@@ -72,11 +72,53 @@ var Q9 = {
 }
 
 // Global Variables 
-var correctanswers = 0;
-var questionnumber = 0;   //keeps track of which question we're on
+var correctanswers = 0;	//keeps track of # of cirrect answers
+var questionnumber = 0;	//keeps track of which question we're on
+var time = 0; //keeps track of seconds for the countdown
+var interval; //variable to hold our inertval, neccessary to clear interval 
+
 
 // Array to hold questions, all questions and answers 
 var questions = [Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9];
+
+function startcountdown (){
+	time = 30;
+	interval = setInterval(timercount, 1000);
+}
+
+function timercount() {
+	// subtract 1 from time
+	time = time - 1;
+
+	//checks to see if timehas run out, if so, moves to next question
+	if (time == 0){
+		$("#questionarea").html('You took too long...<br><img src="./assets/images/wronganswer.gif">');
+
+		questionnumber = questionnumber +1; //moves to next question
+
+		clearInterval(interval); //stops the clock
+		setTimeout(nextquestion, 2500); //moves to next question after playing a gif
+		setTimeout(startcountdown, 2500); //waits to start next timer 
+	}
+
+	// Get current time, pass to timeConverter function, save the result in a variable
+	var converted = timeConverter(time);
+
+	//Use the variable we just created to show the converted time 
+	$("#time").html(converted + " seconds");
+ }
+
+function timeConverter(t) {
+
+    var minutes = Math.floor(t / 60);
+    var seconds = t - (minutes * 60);
+
+    if (seconds < 10) {
+      seconds = "0" + seconds;
+    }
+
+    return seconds;
+  }
 
 // Function that will print the question 
 function printquestion (question){
@@ -88,16 +130,22 @@ function printquestion (question){
 function nextquestion(){
 	questionnumber = questionnumber +1; //moves to next question
 
-	if (questionnumber == questions.length){ //checks to see if quiz is done
-		//put in final image?	
+	if (questionnumber == (questions.length-1)){ //checks to see if quiz is done
+		console.log('game over man, game over!');
+		clearInterval(interval); //stops the clock
+		printquestion(questions[questionnumber]); //prints next questions
+		checkanswer(); //checks user response 
 	}
-
+	else{
+	startcountdown();
 	printquestion(questions[questionnumber]); //prints next questions
 	checkanswer(); //checks user response 
+	}
 }
 
 // Function that will check user choice, includes recursive fuctionality 
 function checkanswer (){
+
 
 	$("#answer").on("click", function() {
 		//plays gif for correct answer
@@ -106,8 +154,9 @@ function checkanswer (){
 		//adds to count for correct answers
 		correctanswers = correctanswers + 1; 
 
-		setTimeout(nextquestion, 2500);
-
+		clearInterval(interval); //stops the clock
+		setTimeout(nextquestion, 2500); //waits to go to next question
+		//setTimeout(startcountdown, 2500); //waits to start next timer 
 	});
 
 	$(".choice").on("click", function() {
@@ -116,7 +165,9 @@ function checkanswer (){
 
 		questionnumber = questionnumber +1; //moves to next question
 
-		setTimeout(nextquestion, 2500);
+		clearInterval(interval); //stops the clock
+		setTimeout(nextquestion, 2500); //waits to go to next question
+		//setTimeout(startcountdown, 2500); //waits to start next timer 
 	});
 
 	// Prints the first question when user clicks 
@@ -125,7 +176,10 @@ function checkanswer (){
 		correctanswers = 0;
 		wronganswers = 0;
 		questionnumber = 0;
+
 		printquestion(questions[questionnumber]); //print questions
+		clearInterval(interval); //stops the clock
+		startcountdown(); //starts clock countdown
 		checkanswer(); 	//checks user response 
 	});
 }
@@ -136,8 +190,7 @@ $(document).ready(function() {
 	$("#startbutton").on("click", function() { 
 			
 		printquestion(questions[questionnumber]); //print questions
+		startcountdown(); //starts clock countdown
 		checkanswer(); 	//checks user response 
-
 	});
 });
-
